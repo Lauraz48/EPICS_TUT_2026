@@ -3,7 +3,7 @@
 3) Fred looks at remaining errors between OpenDSS and PMD-native/Ipopt + why build_mc_pf doesn't work
 4) Laura adds Rahmat's fixed notebooks also to the repo, and verifies if they work/run
 5) More explanations is always a good thing
-
+6) Laura updates the README.MD in the root folder (be inspired by what other projects do)
 
 
 
