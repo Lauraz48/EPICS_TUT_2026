@@ -1,0 +1,1 @@
+new Loadshape.ls1 pmult=(file=load_profile_actual.csv)

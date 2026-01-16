@@ -1,0 +1,23 @@
+Clear
+
+new circuit.lv20_26bus angle=-30.0000000000 basekv=11.0000000000 phases=3 bus1=B2157 model=ideal
+
+set defaultbasefrequency=50.0000000000
+set basefrequency=50.0000000000
+
+redirect Linecodes.dss
+redirect lines.dss
+redirect Loads.dss
+redirect Transformers.dss
+redirect Switches.dss
+redirect Groundings.dss
+
+new Energymeter.substation Element=Transformer.Tx1840 1
+
+set Voltagebases=[0.4, 0.433, 11.0]
+Calcvoltagebases
+
+// batchedit load..* kw=1
+// solve
+// export Voltages
+
