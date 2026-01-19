@@ -33,12 +33,12 @@ using Ipopt
 
 # ╔═╡ 0751e81a-7504-4ab9-8427-1fb2d42b1b55
 md"""
-# 0. Power Flow Analysis
+# 1. Power Flow Analysis
 """
 
 # ╔═╡ 54578622-a2f0-4bc7-8485-c286c7bee532
 md"""
-## 0.1 OpenDSSDirect for PF
+## 1.1 OpenDSSDirect for PF
 This notebook provides introduction to OpenDSSDirect and its usage in power flow analysis.
 """
 
@@ -50,7 +50,7 @@ The interface can be faster than the traditional COM interface and supports mult
 
 # ╔═╡ dc548c7b-1ae3-4a5b-b630-d93abee04041
 md"""
-### 0.1.1 Package Installation
+### 1.1.1 Package Installation
 """
 
 # ╔═╡ bba1a4a9-b577-4447-88c0-6f20d34d1aec
@@ -104,7 +104,7 @@ Using `import` keeps functions namespaced (e.g., Plots.plot()), which is useful 
 
 # ╔═╡ c020e96b-8ebe-4762-a26b-bfef7c5ee3eb
 md"""
-### 0.1.2 Run a Power Flow
+### 1.1.2 Run a Power Flow
 """
 
 # ╔═╡ a40d0ac9-0f36-41d7-aec7-4cb105b8eb13
@@ -188,7 +188,7 @@ ODSS.dss("summary")
 
 # ╔═╡ 1d9dce10-efaf-430e-9f26-7678a5e06544
 md"""
-### 0.1.3 Inspect the solution
+### 1.1.3 Inspect the solution
 The power flow for the circuit now has been solved. Now we visualise the voltage profile across buses with respect to the distance from the source, using the [methods](https://dss-extensions.org/OpenDSSDirect.jl/stable/) `OpenDSSDirect.Circuit.AllBusDistances`, which returns distance from each bus to parent EnergyMeter
 and `OpenDSSDirect.Circuit.AllBusNames`, which returns the array of strings containing names of all buses in circuit.
 """
@@ -246,7 +246,7 @@ Note that OpenDSS only exports the phase-to-ground voltages, not the ph-to-neutr
 # ╔═╡ 270e64be-4d3a-4205-9a2c-98d93fb63e59
 begin   
 	∠(x) = cis(deg2rad(x))
-	vpn(pm,pa,nm,na) = hypot(pm.*∠(pa) - nm.*∠(na))  # method 1
+	vpn(pm,pa,nm,na) = hypot(pm.*∠(pa) - nm.*∠(na))
 	voltages_df[!,:Van] = vpn.(voltages_df[!,Symbol(" Magnitude1")], voltages_df[!,Symbol(" Angle1")], voltages_df[!,Symbol(" Magnitude4")], voltages_df[!,Symbol(" Angle4")])
 	voltages_df[!,:Vbn] = vpn.(voltages_df[!,Symbol(" Magnitude2")], voltages_df[!,Symbol(" Angle2")], voltages_df[!,Symbol(" Magnitude4")], voltages_df[!,Symbol(" Angle4")])
 	voltages_df[!,:Vcn] = vpn.(voltages_df[!,Symbol(" Magnitude3")], voltages_df[!,Symbol(" Angle3")], voltages_df[!,Symbol(" Magnitude4")], voltages_df[!,Symbol(" Angle4")])
@@ -266,7 +266,7 @@ end
 
 # ╔═╡ 65d98000-1831-4885-a4b1-e4ba85df2021
 md"""
-#### plot voltage profiles wrt bus distances
+#### Plot voltage profiles wrt bus distances
 We can now plot the phase-to-ground voltages by distance from the distribution transformer.
 """
 
@@ -275,7 +275,6 @@ begin
 	scatter(voltages_df_1.busdistances, voltages_df_1[!,Symbol(" Magnitude1")], label="phase a", widen=true, size=(600,300))
 	scatter!(voltages_df_1.busdistances, voltages_df_1[!,Symbol(" Magnitude2")], label="phase b")
 	scatter!(voltages_df_1.busdistances, voltages_df_1[!,Symbol(" Magnitude3")], label="phase c")
-	# plot([0;1], [1;1])
 	xlabel!("Distance from distribution transformer (km)")
 	ylabel!("Voltage phase to ground (V)")
 end
@@ -287,7 +286,8 @@ Voltages are best interpreted in a relative sense, in the context of statutory l
 
 # ╔═╡ a7875c60-06a2-4f3e-aad2-0ac10c1b2f8e
 begin
-	scatter(voltages_df_1.busdistances, voltages_df_1[!,Symbol(" Magnitude1")], label="phase a", widen=true, size=(600,300))
+	legend_pos = (0.1, 0.55) 
+	scatter(voltages_df_1.busdistances, voltages_df_1[!,Symbol(" Magnitude1")], label="phase a", widen=true, size=(600,300), legend=legend_pos)
 	scatter!(voltages_df_1.busdistances, voltages_df_1[!,Symbol(" Magnitude2")], label="phase b")
 	scatter!(voltages_df_1.busdistances, voltages_df_1[!,Symbol(" Magnitude3")], label="phase c")
 	plot!([0; 0.2], [253; 253], label = "1.1 pu voltage limit")
@@ -309,8 +309,12 @@ begin
 	xlabel!("Distance from distribution transformer (km)")
 	ylabel!("Voltage phase-to-neutral (V)")
 	xlims!(0, 0.2)
-	ylims!(245, 255)
 end
+
+# ╔═╡ b3a7b2e1-ca84-4589-bca6-f1f796af8530
+md"""
+We visualise the neutral voltages as well.
+"""
 
 # ╔═╡ 16881d47-3e90-4298-95f5-22690ac1195e
 begin
@@ -318,7 +322,6 @@ begin
 	xlabel!("Distance from distribution transformer (km)")
 	ylabel!("Voltage neutral-to-ground (V)")
 	xlims!(0, 0.2)
-	ylims!(0, 20)
 end
 
 # ╔═╡ 879f1fb1-a816-4c20-b58f-9541470745f2
@@ -328,13 +331,13 @@ For better visualisation with bus-line connections:
 
 # ╔═╡ 5cfe9a47-a3a9-4fe2-b130-a5e599791b0a
 function plot_voltage_distance_busconnection()
-	local p = plot(size=(600,300), xlims=[-Inf,0.2], ylabel=("Voltage Magnitude (V)"), widen=true)
-	local pn =plot(size=(600,150), xlims=[-Inf,0.2], xlabel=("Distance from source (km)"), ylabel=("Neutral (V)"), widen=true)
-	ylims!(p, (248,250.1))
-	ylims!(pn, (0, 10))
+	local p = plot(size=(600,300), xlims=[-Inf,0.26], ylabel=("Voltage Magnitude (V)"), widen=true)
+	local pn =plot(size=(600,150), xlims=[-Inf,0.26], xlabel=("Distance from source (km)"), ylabel=("Neutral (V)"), widen=true)
+	ylims!(p, (205,255))
+	hline!(p, [207], linestyle=:dash, label="0.9 pu voltage limit")
+	hline!(p, [253], linestyle=:dash, label="1.1 pu voltage limit")
 
 	local line_nr = ODSS.Lines.First()
-	local vlims = []
 	while line_nr > 0
 		local voltage = [[],[],[],[]]
 		local dist =[]
@@ -350,9 +353,6 @@ function plot_voltage_distance_busconnection()
 		plot!(p, dist, voltage[2], linecolor=:purple, label=false)
 		plot!(p, dist, voltage[3], linecolor=:green, label=false)
 		plot!(pn, dist, voltage[4], linecolor=:brown, label=false)
-		for i in 1:3
-		    append!(vlims, voltage[i])
-		end
 		line_nr = ODSS.Lines.Next()
 	end
 
@@ -378,20 +378,18 @@ function plot_voltage_distance_busconnection()
 	plot!(p, legend=true)
 	scatter!(pn, dist, voltage[4], label=false, color=:red)
 
-
-	# Combine plots
 	l = Plots.@layout [a
-					  b{0.5h}]
-	local pt = plot(p, pn, layout=l, yguidefontvalign = :top, size=(600,450))
+					  b{0.33h}]
+	local pt = plot(p, pn, layout=l, yguidefontvalign =:top, size=(600,450))
 	pt
 end
 
 # ╔═╡ 3a36685e-d91f-4bba-b208-c1ae1df69a73
-p = plot_voltage_distance_busconnection()
+p1 = plot_voltage_distance_busconnection()
 
 # ╔═╡ 4890afa2-8ccf-456e-9d77-610047f1ee43
 md"""
-## 0.2 PowerModelsDistribution for PF
+## 1.2 PowerModelsDistribution for PF
 """
 
 # ╔═╡ dbec4c8b-4819-4943-aab7-10a858560003
@@ -402,7 +400,7 @@ This section shows two ways and compares the result agains that from the previou
 
 # ╔═╡ 0dba5627-323a-4fd3-9967-5408d860dd86
 md"""
-### 0.2.1 Native power flow solver
+### 1.2.1 Native power flow solver
 """
 
 # ╔═╡ a76c642e-6159-4698-9f6e-256691e2ac48
@@ -418,9 +416,6 @@ We construct the `ENGINEERING DATA MODEL` first.
 
 # ╔═╡ 98336b14-893a-4a57-91ab-94f338dbcf61
 data_eng = parse_file(case_file, transformations=[transform_loops!])  # for EN cases
-
-# ╔═╡ 3355ae3f-0b8c-4156-af55-4f1856744621
-
 
 # ╔═╡ b7cde3b8-db53-472e-bc52-0457b12236c7
 md"""
@@ -491,9 +486,6 @@ end
 # ╔═╡ c873584e-9a93-436a-8868-59fb71db560d
 res_dss = dss_voltage_csv_to_res_dict("lv20_26bus_EXP_VOLTAGES.csv")
 
-# ╔═╡ f7f561d7-51fc-451a-a3a3-5cc4955da655
-res_dss["bus"]
-
 # ╔═╡ c76c7b5e-e31f-4dc9-addc-3b9156354678
 md"""
 We define a function to compare OpenDSS bus voltages (vm, va) against PMD bus voltages,
@@ -562,18 +554,9 @@ Get the maximum error.
 # ╔═╡ 9a813e6f-f58f-4835-acc5-a3f68c62256d
 v_max_err_pu = compare_res_dss_pmd(res_dss, res_pmd_eng, data_eng, vbase, verbose=true)
 
-# ╔═╡ 1fbcd1ef-3d7b-4e5b-84c8-ae20523c02ba
-
-
-# ╔═╡ e116d21b-6f97-4b72-9d4c-e4ef7ae1201c
-res_pmd_eng["bus"]["b389"]
-
-# ╔═╡ bfa1187b-6ebd-44b3-a38e-235970da28b9
-res_dss["bus"]["b389"]
-
 # ╔═╡ 169b34f6-c357-4fa8-92a5-058adc514ed9
 md"""
-### 0.2.2 Using Ipopt as a nonlinear equation solver
+### 1.2.2 Using Ipopt as a nonlinear equation solver
 """
 
 # ╔═╡ 295e4a52-4335-48cf-b722-9eca908648c7
@@ -583,21 +566,15 @@ In this case we pursue separation of model and algorithm. We construct the syste
 
 # ╔═╡ 6b0a0764-6fce-481d-83b1-a4e94a5f16eb
 md"""
-Choose the formulation to test:
+We set the formulation to be `IVRENPowerModel`, which is a non-convex nonlinear AC unbalanced power flow using current voltage variables in rectangular coordinates with explicit neutral conductor.
 """
 
 # ╔═╡ 51ca3789-f6ee-4ba3-8895-d4c0ea47feb5
-@bind formulation Select([IVRENPowerModel, IVRReducedENPowerModel, IVRQuadraticENPowerModel, IVRReducedQuadraticENPowerModel])
-
-# ╔═╡ 8778e425-c7c3-43ab-acd6-b3e2176731c6
-formulation
-
-# ╔═╡ ce66d754-379c-4fc4-a95f-9a8c85691047
-# formulations = [IVRENPowerModel, IVRReducedENPowerModel, IVRQuadraticENPowerModel, IVRReducedQuadraticENPowerModel] # ACRENPowerModel
+formulation = IVRENPowerModel
 
 # ╔═╡ c2da2c1c-b0ab-46f1-a386-303443a11a5e
 md"""
-Deep copy the engineering model, remove bounds, and convert it to mathematical model.
+Deep copy the engineering model.
 """
 
 # ╔═╡ 3d76d57a-8e56-4453-a80e-d2e28da599b4
@@ -610,6 +587,11 @@ We are trying to solver a power flow, in which there are no bounds, so we remove
 
 # ╔═╡ 18fa9315-7fa7-4b43-a450-c7806a4c9f97
 remove_all_bounds!(data_eng_2)
+
+# ╔═╡ d320d218-da68-4bdf-80f6-d0642d8e0101
+md"""
+Then we convert it to a `mathematical data model`. This is a transformation of the engineering components into forms that can be more easily represented in the optimization model.
+"""
 
 # ╔═╡ e7fa3660-3d1f-4ace-b9f4-c7a86c2044ca
 data_math_2 = transform_data_model(data_eng_2, kron_reduce=false, phase_project=false)
@@ -624,7 +606,7 @@ add_start_vrvi!(data_math_2)
 
 # ╔═╡ 11bea3f9-9066-45db-afba-f7b501c91ab0
 md"""
-Instantiate the model of choice.
+We instantiate the model of choice and set up the solver.
 """
 
 # ╔═╡ d9b96204-387a-44ec-8a2a-52128e38f9de
@@ -640,7 +622,7 @@ ipopt_solver = optimizer_with_attributes(Ipopt.Optimizer)
 
 # ╔═╡ fa3c626e-4c54-42f4-b69a-87233462cb98
 md"""
-Solve the model and get the result.
+Then we solve the model and get results.
 """
 
 # ╔═╡ 455b4b49-39f9-4de8-b3a4-eb4b56967f62
@@ -648,7 +630,7 @@ result = optimize_model!(pm, optimizer=ipopt_solver)
 
 # ╔═╡ 24d9c062-c0bd-4916-8c18-9f65bba676c0
 md"""
-Transform the solution to engineering.
+We transform the solution back to the `ENGINEERING` data model.
 """
 
 # ╔═╡ 61037f62-00e5-4747-ab99-48e8f4d83382
@@ -662,9 +644,14 @@ Calculate the maximum voltage error w.r.t DSS model.
 # ╔═╡ 90e83716-2170-46a7-bd8e-f1b0fd64fe2f
 v_max_err_pu_2 = compare_res_dss_pmd(res_dss, res_pmd_ipopt, data_eng_2, vbase, verbose=true)
 
+# ╔═╡ f8d8cea5-820a-47d1-8362-fc331acc937d
+md"""
+### 1.2.3 Comparison of results
+"""
+
 # ╔═╡ 652beae9-71b8-4103-86dc-87c0b133f3de
 md"""
-Result comparison of the three methods above:
+Finally we conduct result comparison of the three methods above:
 """
 
 # ╔═╡ 2429d7b9-057d-4202-b5ca-09b699036573
@@ -766,14 +753,109 @@ df_global = DataFrame(
     ]
 )
 
-# ╔═╡ 5e2d1ad0-be6a-415c-9887-e1fede4effe1
-
-
 # ╔═╡ 15f37365-0aee-41ba-aa27-09b8eebe0999
 
 
 # ╔═╡ f8fda4db-8a8a-46b6-a44f-e92ae4db3e31
 # res_pf_ipopt = solve_mc_model(data_eng_2, IVRENPowerModel, Ipopt.Optimizer, build_mc_pf)
+
+# ╔═╡ f6cff32f-92e4-4966-a9e1-86f81d97ecbc
+md"""
+---
+"""
+
+# ╔═╡ 0bbe9eaf-48b2-480a-bcf2-2df07d5d87c3
+md"""
+### PLAYGROUND
+Here we illustrate how the bus voltages behave with respect to changes in load.
+"""
+
+# ╔═╡ 7b855446-0f29-4c19-a248-8fecdd0c3470
+md"""
+We extract the load names directly from the network DSS file instead of manually entering them.
+"""
+
+# ╔═╡ 2686752c-fdce-4d2e-82b4-24ef04d8ce50
+function get_all_load_names()
+	names = String[]
+	i = ODSS.Loads.First()
+	while i > 0
+		push!(names, ODSS.Loads.Name())
+		i = ODSS.Loads.Next()
+	end
+	return names
+end
+
+# ╔═╡ f1b5f796-ff78-44f3-864b-b87c076ba3f9
+load_names = get_all_load_names()
+
+# ╔═╡ 9138db5b-6631-4f58-b8ed-ebef3c6da893
+md"""
+We develop functions for activating loads and setting power multipliers.
+"""
+
+# ╔═╡ 1b60b9b2-7bc9-4b3f-995c-ce11f4945dfc
+function activate_load!(lname::String)
+    ODSS.Loads.Name(lname)
+    active = ODSS.Loads.Name()
+    if active != lname
+        error("Load not found or not activated: $lname (active=$active)")
+    end
+    return nothing
+end
+
+# ╔═╡ 1cef4bfa-bcb0-4a9e-b677-255db7f601f3
+function set_load_kwmult!(lname::String, kwmult::Real)
+    activate_load!(lname)
+    ODSS.Loads.kW(Float64(kwmult))
+    return nothing
+end
+
+# ╔═╡ b1f1dfdd-c967-475e-9ffc-f26aed25c3d7
+@bind selected_load Select(load_names)
+
+# ╔═╡ 0c302cd6-01a1-47e0-a7fb-365c3158799d
+md"""
+#### 0x $(@bind kwmult Slider(0:30, default=15)) 30x
+"""
+
+# ╔═╡ 9c11235b-ce62-4b6b-b827-29fe3556a20e
+md"""
+Select the load kW multiplier: **$(kwmult)x**
+"""
+
+# ╔═╡ 11473624-c664-46e7-b016-f05a22da8eeb
+begin
+	function all_loads_kw()
+	    data = Dict{String,Float64}()
+	    i = ODSS.Loads.First()
+	    while i > 0
+	        name = ODSS.Loads.Name()
+	        data[name] = ODSS.Loads.kW()
+	        i = ODSS.Loads.Next()
+	    end
+	    data
+	end
+	all_loads_kw()
+end
+
+# ╔═╡ 218c27a8-ea42-42c7-be6b-f6f516b0dfbd
+begin
+	set_load_kwmult!(selected_load, kwmult)
+	ODSS.dss("solve")
+	ODSS.dss("solve")
+	# ODSS.dss("summary")
+	if !ODSS.Solution.Converged()
+		@warn "Power flow did not converge."
+	end
+	p2 = plot_voltage_distance_busconnection()
+
+end
+
+# ╔═╡ dcbf3fad-4744-4ad3-8975-1a7cd651a443
+md"""
+We can see that voltage drop in the network is affected by load variation and distance from the source. In addition, neutral voltage rise increases with greater load unbalance.
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -801,9 +883,9 @@ PowerModelsDistribution = "~0.16.0"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.6"
+julia_version = "1.12.3"
 manifest_format = "2.0"
-project_hash = "6062a8d1b8018379fe8817e1d6b0dce351c03cd8"
+project_hash = "4d1bc53c960a4bde99df471567b027f3943a04d5"
 
 [[deps.ASL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -934,7 +1016,7 @@ weakdeps = ["Dates", "LinearAlgebra"]
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.1.1+0"
+version = "1.3.0+1"
 
 [[deps.ConcurrentUtilities]]
 deps = ["Serialization", "Sockets"]
@@ -1016,7 +1098,7 @@ version = "0.9.5"
 [[deps.Downloads]]
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
-version = "1.6.0"
+version = "1.7.0"
 
 [[deps.EpollShim_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1321,6 +1403,11 @@ version = "1.29.3"
     [deps.JuMP.weakdeps]
     DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
 
+[[deps.JuliaSyntaxHighlighting]]
+deps = ["StyledStrings"]
+uuid = "ac6e5ff7-fb65-4e79-a425-ec3bc9c03011"
+version = "1.12.0"
+
 [[deps.LAME_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "059aabebaa7c82ccb853dd4a0ee9d17796f7e1bc"
@@ -1374,24 +1461,24 @@ uuid = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
 version = "0.6.4"
 
 [[deps.LibCURL_jll]]
-deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll", "Zlib_jll", "nghttp2_jll"]
+deps = ["Artifacts", "LibSSH2_jll", "Libdl", "OpenSSL_jll", "Zlib_jll", "nghttp2_jll"]
 uuid = "deac9b47-8bc7-5906-a0fe-35ac56dc84c0"
-version = "8.6.0+0"
+version = "8.15.0+0"
 
 [[deps.LibGit2]]
-deps = ["Base64", "LibGit2_jll", "NetworkOptions", "Printf", "SHA"]
+deps = ["LibGit2_jll", "NetworkOptions", "Printf", "SHA"]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
 version = "1.11.0"
 
 [[deps.LibGit2_jll]]
-deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll"]
+deps = ["Artifacts", "LibSSH2_jll", "Libdl", "OpenSSL_jll"]
 uuid = "e37daf67-58a4-590a-8e99-b0245dd2ffc5"
-version = "1.7.2+0"
+version = "1.9.0+0"
 
 [[deps.LibSSH2_jll]]
-deps = ["Artifacts", "Libdl", "MbedTLS_jll"]
+deps = ["Artifacts", "Libdl", "OpenSSL_jll"]
 uuid = "29816b5a-b9ab-546f-933c-edad1886dfa8"
-version = "1.11.0+1"
+version = "1.11.3+1"
 
 [[deps.Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
@@ -1436,7 +1523,7 @@ version = "2.41.2+0"
 [[deps.LinearAlgebra]]
 deps = ["Libdl", "OpenBLAS_jll", "libblastrampoline_jll"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-version = "1.11.0"
+version = "1.12.0"
 
 [[deps.LogExpFunctions]]
 deps = ["DocStringExtensions", "IrrationalConstants", "LinearAlgebra"]
@@ -1487,7 +1574,7 @@ uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 version = "0.5.16"
 
 [[deps.Markdown]]
-deps = ["Base64"]
+deps = ["Base64", "JuliaSyntaxHighlighting", "StyledStrings"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 version = "1.11.0"
 
@@ -1504,7 +1591,8 @@ uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
 version = "1.1.9"
 
 [[deps.MbedTLS_jll]]
-deps = ["Artifacts", "Libdl"]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "926c6af3a037c68d02596a44c22ec3595f5f760b"
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
 version = "2.28.6+0"
 
@@ -1531,7 +1619,7 @@ version = "1.11.0"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
-version = "2023.12.12"
+version = "2025.5.20"
 
 [[deps.MutableArithmetics]]
 deps = ["LinearAlgebra", "SparseArrays", "Test"]
@@ -1547,7 +1635,7 @@ version = "1.1.3"
 
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
-version = "1.2.0"
+version = "1.3.0"
 
 [[deps.Ogg_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1564,7 +1652,7 @@ version = "0.3.24+0"
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
-version = "0.3.27+1"
+version = "0.3.29+0"
 
 [[deps.OpenDSSDirect]]
 deps = ["CEnum", "DocStringExtensions", "Downloads", "Libdl", "LinearAlgebra", "REPL", "SparseArrays", "Test"]
@@ -1575,7 +1663,7 @@ version = "0.9.9"
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
-version = "0.8.5+0"
+version = "0.8.7+0"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "NetworkOptions", "OpenSSL_jll", "Sockets"]
@@ -1584,8 +1672,7 @@ uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
 version = "1.6.1"
 
 [[deps.OpenSSL_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "f19301ae653233bc88b1810ae908194f07f8db9d"
+deps = ["Artifacts", "Libdl"]
 uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
 version = "3.5.4+0"
 
@@ -1609,7 +1696,7 @@ version = "1.8.1"
 [[deps.PCRE2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "efcefdf7-47ab-520b-bdef-62a2eaa19f15"
-version = "10.42.0+1"
+version = "10.44.0+1"
 
 [[deps.Pango_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "FriBidi_jll", "Glib_jll", "HarfBuzz_jll", "JLLWrappers", "Libdl"]
@@ -1632,7 +1719,7 @@ version = "0.44.2+0"
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "Random", "SHA", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
-version = "1.11.0"
+version = "1.12.1"
 weakdeps = ["REPL"]
 
     [deps.Pkg.extensions]
@@ -1718,6 +1805,7 @@ uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 version = "1.11.0"
 
 [[deps.Profile]]
+deps = ["StyledStrings"]
 uuid = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
 version = "1.11.0"
 
@@ -1751,7 +1839,7 @@ uuid = "e99dba38-086e-5de3-a5b1-6e4c66e897c3"
 version = "6.8.2+2"
 
 [[deps.REPL]]
-deps = ["InteractiveUtils", "Markdown", "Sockets", "StyledStrings", "Unicode"]
+deps = ["InteractiveUtils", "JuliaSyntaxHighlighting", "Markdown", "Sockets", "StyledStrings", "Unicode"]
 uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 version = "1.11.0"
 
@@ -1850,7 +1938,7 @@ version = "1.2.2"
 [[deps.SparseArrays]]
 deps = ["Libdl", "LinearAlgebra", "Random", "Serialization", "SuiteSparse_jll"]
 uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
-version = "1.11.0"
+version = "1.12.0"
 
 [[deps.SpecialFunctions]]
 deps = ["IrrationalConstants", "LogExpFunctions", "OpenLibm_jll", "OpenSpecFun_jll"]
@@ -1930,7 +2018,7 @@ version = "1.11.0"
 [[deps.SuiteSparse_jll]]
 deps = ["Artifacts", "Libdl", "libblastrampoline_jll"]
 uuid = "bea87d4a-7f5b-5778-9afe-8cc45184846c"
-version = "7.7.0+0"
+version = "7.8.3+2"
 
 [[deps.TOML]]
 deps = ["Dates"]
@@ -2182,7 +2270,7 @@ version = "1.6.0+0"
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
-version = "1.2.13+1"
+version = "1.3.1+2"
 
 [[deps.Zstd_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -2217,7 +2305,7 @@ version = "0.17.4+0"
 [[deps.libblastrampoline_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.11.0+0"
+version = "5.15.0+0"
 
 [[deps.libdecor_jll]]
 deps = ["Artifacts", "Dbus_jll", "JLLWrappers", "Libdl", "Libglvnd_jll", "Pango_jll", "Wayland_jll", "xkbcommon_jll"]
@@ -2264,12 +2352,12 @@ version = "1.1.7+0"
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
-version = "1.59.0+0"
+version = "1.64.0+1"
 
 [[deps.p7zip_jll]]
-deps = ["Artifacts", "Libdl"]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
-version = "17.4.0+2"
+version = "17.7.0+0"
 
 [[deps.x264_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -2291,10 +2379,10 @@ version = "1.13.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─0751e81a-7504-4ab9-8427-1fb2d42b1b55
-# ╟─54578622-a2f0-4bc7-8485-c286c7bee532
+# ╠═0751e81a-7504-4ab9-8427-1fb2d42b1b55
+# ╠═54578622-a2f0-4bc7-8485-c286c7bee532
 # ╟─88c5dba7-0953-4c34-858a-123463c8667b
-# ╟─dc548c7b-1ae3-4a5b-b630-d93abee04041
+# ╠═dc548c7b-1ae3-4a5b-b630-d93abee04041
 # ╟─bba1a4a9-b577-4447-88c0-6f20d34d1aec
 # ╟─490eb3ad-42e6-48cc-823e-5507cd8c54cb
 # ╟─c0305af1-bb18-4ac0-bb41-0477673f1ef5
@@ -2306,8 +2394,8 @@ version = "1.13.0+0"
 # ╟─23fe1799-9923-41f2-b63d-bae9a55bed18
 # ╠═80fba6ba-7599-445f-bb66-10a711a7669b
 # ╟─9ce1b73f-0423-4380-9208-1d5a86f5f098
-# ╟─c020e96b-8ebe-4762-a26b-bfef7c5ee3eb
-# ╠═a40d0ac9-0f36-41d7-aec7-4cb105b8eb13
+# ╠═c020e96b-8ebe-4762-a26b-bfef7c5ee3eb
+# ╟─a40d0ac9-0f36-41d7-aec7-4cb105b8eb13
 # ╠═2c03e08e-1c1c-449a-b129-85584c2f20bd
 # ╠═62256586-7b60-4014-ba5a-f3ee30d0cab9
 # ╠═cca88fe7-4f20-4bf2-8382-71ceb044cb21
@@ -2320,7 +2408,7 @@ version = "1.13.0+0"
 # ╠═ea816cb5-4128-4054-a6d5-30f7e4127264
 # ╟─caf88250-c0b5-46c6-b22a-27dab8f65919
 # ╠═ace5a001-5f16-4f0e-bfab-59df1a56d16b
-# ╟─1d9dce10-efaf-430e-9f26-7678a5e06544
+# ╠═1d9dce10-efaf-430e-9f26-7678a5e06544
 # ╠═3aa870e0-fffb-4983-9ee6-66660da0a2ee
 # ╟─470a3121-e002-4425-8f29-a97dd5636abd
 # ╠═adc2490f-bd41-4d62-94e3-5326a3b0457d
@@ -2334,22 +2422,22 @@ version = "1.13.0+0"
 # ╟─67b4308e-ce3d-4c12-b305-c5980165f804
 # ╠═dafb08e4-8a9f-4912-b153-bd999c7844c8
 # ╟─65d98000-1831-4885-a4b1-e4ba85df2021
-# ╟─5b98d946-b327-4759-a73d-285e2e61dc08
+# ╠═5b98d946-b327-4759-a73d-285e2e61dc08
 # ╟─16573d92-a5b9-4b2a-a1c3-7d4d6df108e8
-# ╟─a7875c60-06a2-4f3e-aad2-0ac10c1b2f8e
+# ╠═a7875c60-06a2-4f3e-aad2-0ac10c1b2f8e
 # ╟─c6269e6e-ee12-4881-9425-7419e6bc2333
 # ╠═58671576-8728-4e48-871c-148b732102b1
+# ╟─b3a7b2e1-ca84-4589-bca6-f1f796af8530
 # ╠═16881d47-3e90-4298-95f5-22690ac1195e
 # ╟─879f1fb1-a816-4c20-b58f-9541470745f2
-# ╟─5cfe9a47-a3a9-4fe2-b130-a5e599791b0a
+# ╠═5cfe9a47-a3a9-4fe2-b130-a5e599791b0a
 # ╠═3a36685e-d91f-4bba-b208-c1ae1df69a73
-# ╟─4890afa2-8ccf-456e-9d77-610047f1ee43
+# ╠═4890afa2-8ccf-456e-9d77-610047f1ee43
 # ╟─dbec4c8b-4819-4943-aab7-10a858560003
-# ╟─0dba5627-323a-4fd3-9967-5408d860dd86
+# ╠═0dba5627-323a-4fd3-9967-5408d860dd86
 # ╟─a76c642e-6159-4698-9f6e-256691e2ac48
 # ╟─980c8cfd-5be1-49ed-97a2-3add19854640
 # ╠═98336b14-893a-4a57-91ab-94f338dbcf61
-# ╠═3355ae3f-0b8c-4156-af55-4f1856744621
 # ╟─b7cde3b8-db53-472e-bc52-0457b12236c7
 # ╠═864cec2d-7c3d-4fc0-a764-20608953a2f7
 # ╟─fab5b940-a062-4907-b4eb-7cce30581d95
@@ -2362,44 +2450,53 @@ version = "1.13.0+0"
 # ╟─b075a56b-a22c-4465-b6d0-422342a91acf
 # ╟─90c84c45-8c06-4e54-a674-dd596d66cf44
 # ╠═c873584e-9a93-436a-8868-59fb71db560d
-# ╠═f7f561d7-51fc-451a-a3a3-5cc4955da655
 # ╟─c76c7b5e-e31f-4dc9-addc-3b9156354678
 # ╟─4fed0344-f8b2-4991-ad34-f20da38d3746
 # ╟─f62915be-8564-4107-a8a3-28e3547c4ff1
 # ╠═9a813e6f-f58f-4835-acc5-a3f68c62256d
-# ╠═1fbcd1ef-3d7b-4e5b-84c8-ae20523c02ba
-# ╠═e116d21b-6f97-4b72-9d4c-e4ef7ae1201c
-# ╠═bfa1187b-6ebd-44b3-a38e-235970da28b9
-# ╟─169b34f6-c357-4fa8-92a5-058adc514ed9
+# ╠═169b34f6-c357-4fa8-92a5-058adc514ed9
 # ╠═295e4a52-4335-48cf-b722-9eca908648c7
 # ╠═6b0a0764-6fce-481d-83b1-a4e94a5f16eb
-# ╟─51ca3789-f6ee-4ba3-8895-d4c0ea47feb5
-# ╠═8778e425-c7c3-43ab-acd6-b3e2176731c6
-# ╠═ce66d754-379c-4fc4-a95f-9a8c85691047
-# ╟─c2da2c1c-b0ab-46f1-a386-303443a11a5e
+# ╠═51ca3789-f6ee-4ba3-8895-d4c0ea47feb5
+# ╠═c2da2c1c-b0ab-46f1-a386-303443a11a5e
 # ╠═3d76d57a-8e56-4453-a80e-d2e28da599b4
 # ╟─75e68068-8796-4745-be38-a901a91a47a7
 # ╠═18fa9315-7fa7-4b43-a450-c7806a4c9f97
+# ╠═d320d218-da68-4bdf-80f6-d0642d8e0101
 # ╠═e7fa3660-3d1f-4ace-b9f4-c7a86c2044ca
 # ╟─6c3168db-c972-456c-b22a-2efa17f131ef
 # ╠═17f8a3c3-0ac9-4ebd-84e5-408574f4569d
-# ╟─11bea3f9-9066-45db-afba-f7b501c91ab0
+# ╠═11bea3f9-9066-45db-afba-f7b501c91ab0
 # ╠═d9b96204-387a-44ec-8a2a-52128e38f9de
 # ╟─cca35b03-4f76-4e28-83d3-ed043522bfdb
 # ╠═cff56dc3-f2ce-4da5-8e28-b9dc0e557c97
-# ╟─fa3c626e-4c54-42f4-b69a-87233462cb98
+# ╠═fa3c626e-4c54-42f4-b69a-87233462cb98
 # ╠═455b4b49-39f9-4de8-b3a4-eb4b56967f62
-# ╟─24d9c062-c0bd-4916-8c18-9f65bba676c0
+# ╠═24d9c062-c0bd-4916-8c18-9f65bba676c0
 # ╠═61037f62-00e5-4747-ab99-48e8f4d83382
 # ╟─b2cf24cb-fd6a-424c-98b4-5d41119685d8
 # ╠═90e83716-2170-46a7-bd8e-f1b0fd64fe2f
-# ╟─652beae9-71b8-4103-86dc-87c0b133f3de
+# ╠═f8d8cea5-820a-47d1-8362-fc331acc937d
+# ╠═652beae9-71b8-4103-86dc-87c0b133f3de
 # ╠═2429d7b9-057d-4202-b5ca-09b699036573
 # ╠═dd3e87a7-ba6d-44c9-9733-46f922daf56b
 # ╠═28f8105b-06e4-4e3e-9286-b85b7d3c277e
 # ╠═6c8788fa-7a09-4c95-bd04-8399769c2cef
-# ╠═5e2d1ad0-be6a-415c-9887-e1fede4effe1
 # ╠═15f37365-0aee-41ba-aa27-09b8eebe0999
 # ╠═f8fda4db-8a8a-46b6-a44f-e92ae4db3e31
+# ╟─f6cff32f-92e4-4966-a9e1-86f81d97ecbc
+# ╠═0bbe9eaf-48b2-480a-bcf2-2df07d5d87c3
+# ╠═7b855446-0f29-4c19-a248-8fecdd0c3470
+# ╠═2686752c-fdce-4d2e-82b4-24ef04d8ce50
+# ╠═f1b5f796-ff78-44f3-864b-b87c076ba3f9
+# ╠═9138db5b-6631-4f58-b8ed-ebef3c6da893
+# ╠═1b60b9b2-7bc9-4b3f-995c-ce11f4945dfc
+# ╠═1cef4bfa-bcb0-4a9e-b677-255db7f601f3
+# ╠═b1f1dfdd-c967-475e-9ffc-f26aed25c3d7
+# ╟─0c302cd6-01a1-47e0-a7fb-365c3158799d
+# ╟─9c11235b-ce62-4b6b-b827-29fe3556a20e
+# ╟─11473624-c664-46e7-b016-f05a22da8eeb
+# ╠═218c27a8-ea42-42c7-be6b-f6f516b0dfbd
+# ╟─dcbf3fad-4744-4ad3-8975-1a7cd651a443
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
