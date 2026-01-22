@@ -509,11 +509,10 @@ function compare_res_dss_pmd(res_dss::Dict{String,<:Any}, res_pmd_eng::Dict{Stri
 		terminals = data_eng["bus"][id]["terminals"]
 		ts = filter(x->haskey(dss_bus["vm"], string(x)), terminals)
 
-		# -------- DSS: vm/va
+		# DSS: vm/va
 		v_dss = [dss_bus["vm"]["$t"]*exp(im*deg2rad(dss_bus["va"]["$t"])) for t in ts]
 
-		# -------- PMD: either (vm/va) or (vr/vi)
-		# v_pmd = [pmd_bus["vm"][idx]*exp(im*deg2rad(pmd_bus["va"][idx]))*data_eng["settings"]["voltage_scale_factor"] for (idx, t) in enumerate(ts)]
+		# PMD: (vm/va) or (vr/vi)
 		if haskey(pmd_bus, "vm") && haskey(pmd_bus, "va")
 			v_pmd = [pmd_bus["vm"][idx]*exp(im*deg2rad(pmd_bus["va"][idx]))*data_eng["settings"]["voltage_scale_factor"] for (idx, _) in enumerate(ts)]
 		elseif haskey(pmd_bus, "vr") && haskey(pmd_bus, "vi")
@@ -526,7 +525,6 @@ function compare_res_dss_pmd(res_dss::Dict{String,<:Any}, res_pmd_eng::Dict{Stri
 		v_dss_pu = v_dss/vbase[id]
 		v_pmd_pu = v_pmd/vbase[id]
 
-		N = length(v_dss)
 		labels = string.(ts)
 
 		for i in eachindex(v_pmd_pu)
@@ -540,6 +538,7 @@ function compare_res_dss_pmd(res_dss::Dict{String,<:Any}, res_pmd_eng::Dict{Stri
 				println("\t   ∠U dss: $(angle(v_dss_pu[i]))")
 				println("\t   ∠U pmd: $(angle(v_pmd_pu[i]))")
 			end
+			
 		end
 	end
 
@@ -816,12 +815,12 @@ end
 
 # ╔═╡ 0c302cd6-01a1-47e0-a7fb-365c3158799d
 md"""
-#### 0x $(@bind kwmult Slider(0:30, default=15)) 30x
+#### 0 $(@bind kwmult Slider(0:30, default=25)) 30
 """
 
 # ╔═╡ 9c11235b-ce62-4b6b-b827-29fe3556a20e
 md"""
-Select the load kW multiplier: **$(kwmult)x**
+Select the load kW : $(kwmult)
 """
 
 # ╔═╡ 11473624-c664-46e7-b016-f05a22da8eeb
@@ -2379,14 +2378,14 @@ version = "1.13.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═0751e81a-7504-4ab9-8427-1fb2d42b1b55
-# ╠═54578622-a2f0-4bc7-8485-c286c7bee532
+# ╟─0751e81a-7504-4ab9-8427-1fb2d42b1b55
+# ╟─54578622-a2f0-4bc7-8485-c286c7bee532
 # ╟─88c5dba7-0953-4c34-858a-123463c8667b
-# ╠═dc548c7b-1ae3-4a5b-b630-d93abee04041
+# ╟─dc548c7b-1ae3-4a5b-b630-d93abee04041
 # ╟─bba1a4a9-b577-4447-88c0-6f20d34d1aec
 # ╟─490eb3ad-42e6-48cc-823e-5507cd8c54cb
 # ╟─c0305af1-bb18-4ac0-bb41-0477673f1ef5
-# ╠═43347c40-6c9d-4075-b5c1-fea3c8d31f32
+# ╟─43347c40-6c9d-4075-b5c1-fea3c8d31f32
 # ╟─5b1c2d99-fb70-44c3-b76a-6984bd2f3f3b
 # ╠═b1c1c6ea-7eff-4037-b9d7-7398960b1a5a
 # ╠═1f8edf46-f9d0-4239-9f1f-09992563b8b1
@@ -2394,21 +2393,21 @@ version = "1.13.0+0"
 # ╟─23fe1799-9923-41f2-b63d-bae9a55bed18
 # ╠═80fba6ba-7599-445f-bb66-10a711a7669b
 # ╟─9ce1b73f-0423-4380-9208-1d5a86f5f098
-# ╠═c020e96b-8ebe-4762-a26b-bfef7c5ee3eb
+# ╟─c020e96b-8ebe-4762-a26b-bfef7c5ee3eb
 # ╟─a40d0ac9-0f36-41d7-aec7-4cb105b8eb13
 # ╠═2c03e08e-1c1c-449a-b129-85584c2f20bd
 # ╠═62256586-7b60-4014-ba5a-f3ee30d0cab9
 # ╠═cca88fe7-4f20-4bf2-8382-71ceb044cb21
 # ╟─305a6048-8ccb-49db-b4c9-ad5cc3ddac69
 # ╟─867fdb7f-e014-488a-bde8-e56a4b14d3af
-# ╠═fe7ef10d-473b-4b1d-8fe3-612aac398b9d
+# ╟─fe7ef10d-473b-4b1d-8fe3-612aac398b9d
 # ╟─a2186e44-c58c-4645-9014-a91702d0f6fb
 # ╟─dc2cb667-0a21-4ab4-a40c-11891c7ab76a
 # ╠═94d10046-c33a-4907-bcd4-b3da3c46cbc3
 # ╠═ea816cb5-4128-4054-a6d5-30f7e4127264
 # ╟─caf88250-c0b5-46c6-b22a-27dab8f65919
 # ╠═ace5a001-5f16-4f0e-bfab-59df1a56d16b
-# ╠═1d9dce10-efaf-430e-9f26-7678a5e06544
+# ╟─1d9dce10-efaf-430e-9f26-7678a5e06544
 # ╠═3aa870e0-fffb-4983-9ee6-66660da0a2ee
 # ╟─470a3121-e002-4425-8f29-a97dd5636abd
 # ╠═adc2490f-bd41-4d62-94e3-5326a3b0457d
@@ -2451,33 +2450,33 @@ version = "1.13.0+0"
 # ╟─90c84c45-8c06-4e54-a674-dd596d66cf44
 # ╠═c873584e-9a93-436a-8868-59fb71db560d
 # ╟─c76c7b5e-e31f-4dc9-addc-3b9156354678
-# ╟─4fed0344-f8b2-4991-ad34-f20da38d3746
+# ╠═4fed0344-f8b2-4991-ad34-f20da38d3746
 # ╟─f62915be-8564-4107-a8a3-28e3547c4ff1
 # ╠═9a813e6f-f58f-4835-acc5-a3f68c62256d
-# ╠═169b34f6-c357-4fa8-92a5-058adc514ed9
-# ╠═295e4a52-4335-48cf-b722-9eca908648c7
-# ╠═6b0a0764-6fce-481d-83b1-a4e94a5f16eb
+# ╟─169b34f6-c357-4fa8-92a5-058adc514ed9
+# ╟─295e4a52-4335-48cf-b722-9eca908648c7
+# ╟─6b0a0764-6fce-481d-83b1-a4e94a5f16eb
 # ╠═51ca3789-f6ee-4ba3-8895-d4c0ea47feb5
-# ╠═c2da2c1c-b0ab-46f1-a386-303443a11a5e
+# ╟─c2da2c1c-b0ab-46f1-a386-303443a11a5e
 # ╠═3d76d57a-8e56-4453-a80e-d2e28da599b4
 # ╟─75e68068-8796-4745-be38-a901a91a47a7
 # ╠═18fa9315-7fa7-4b43-a450-c7806a4c9f97
-# ╠═d320d218-da68-4bdf-80f6-d0642d8e0101
+# ╟─d320d218-da68-4bdf-80f6-d0642d8e0101
 # ╠═e7fa3660-3d1f-4ace-b9f4-c7a86c2044ca
 # ╟─6c3168db-c972-456c-b22a-2efa17f131ef
 # ╠═17f8a3c3-0ac9-4ebd-84e5-408574f4569d
-# ╠═11bea3f9-9066-45db-afba-f7b501c91ab0
+# ╟─11bea3f9-9066-45db-afba-f7b501c91ab0
 # ╠═d9b96204-387a-44ec-8a2a-52128e38f9de
 # ╟─cca35b03-4f76-4e28-83d3-ed043522bfdb
 # ╠═cff56dc3-f2ce-4da5-8e28-b9dc0e557c97
-# ╠═fa3c626e-4c54-42f4-b69a-87233462cb98
+# ╟─fa3c626e-4c54-42f4-b69a-87233462cb98
 # ╠═455b4b49-39f9-4de8-b3a4-eb4b56967f62
-# ╠═24d9c062-c0bd-4916-8c18-9f65bba676c0
+# ╟─24d9c062-c0bd-4916-8c18-9f65bba676c0
 # ╠═61037f62-00e5-4747-ab99-48e8f4d83382
 # ╟─b2cf24cb-fd6a-424c-98b4-5d41119685d8
 # ╠═90e83716-2170-46a7-bd8e-f1b0fd64fe2f
-# ╠═f8d8cea5-820a-47d1-8362-fc331acc937d
-# ╠═652beae9-71b8-4103-86dc-87c0b133f3de
+# ╟─f8d8cea5-820a-47d1-8362-fc331acc937d
+# ╟─652beae9-71b8-4103-86dc-87c0b133f3de
 # ╠═2429d7b9-057d-4202-b5ca-09b699036573
 # ╠═dd3e87a7-ba6d-44c9-9733-46f922daf56b
 # ╠═28f8105b-06e4-4e3e-9286-b85b7d3c277e
@@ -2485,18 +2484,18 @@ version = "1.13.0+0"
 # ╠═15f37365-0aee-41ba-aa27-09b8eebe0999
 # ╠═f8fda4db-8a8a-46b6-a44f-e92ae4db3e31
 # ╟─f6cff32f-92e4-4966-a9e1-86f81d97ecbc
-# ╠═0bbe9eaf-48b2-480a-bcf2-2df07d5d87c3
-# ╠═7b855446-0f29-4c19-a248-8fecdd0c3470
+# ╟─0bbe9eaf-48b2-480a-bcf2-2df07d5d87c3
+# ╟─7b855446-0f29-4c19-a248-8fecdd0c3470
 # ╠═2686752c-fdce-4d2e-82b4-24ef04d8ce50
 # ╠═f1b5f796-ff78-44f3-864b-b87c076ba3f9
-# ╠═9138db5b-6631-4f58-b8ed-ebef3c6da893
+# ╟─9138db5b-6631-4f58-b8ed-ebef3c6da893
 # ╠═1b60b9b2-7bc9-4b3f-995c-ce11f4945dfc
 # ╠═1cef4bfa-bcb0-4a9e-b677-255db7f601f3
 # ╠═b1f1dfdd-c967-475e-9ffc-f26aed25c3d7
-# ╟─0c302cd6-01a1-47e0-a7fb-365c3158799d
+# ╠═0c302cd6-01a1-47e0-a7fb-365c3158799d
 # ╟─9c11235b-ce62-4b6b-b827-29fe3556a20e
 # ╟─11473624-c664-46e7-b016-f05a22da8eeb
-# ╠═218c27a8-ea42-42c7-be6b-f6f516b0dfbd
+# ╟─218c27a8-ea42-42c7-be6b-f6f516b0dfbd
 # ╟─dcbf3fad-4744-4ad3-8975-1a7cd651a443
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
