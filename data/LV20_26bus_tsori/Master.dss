@@ -16,5 +16,5 @@ redirect Groundings.dss
 
 new Energymeter.substation Element=Transformer.Tx1840 1
 
-Set Voltagebases=[0.433, 11.0]
+Set Voltagebases=[0.4, 11.0]
 Calcvoltagebases
