@@ -33,13 +33,13 @@ using Ipopt
 
 # ╔═╡ 020a6270-e9db-11f0-1b7a-b1763ebcb4bc
 md"""
-# 1. Optimal Power Flow_Time Series
+# 3. Optimal Power Flow_Time Series
 This notebook provides a guide to the workflow of a basic _optimal power flow_ (OPF) problem with time-series consideration.
 """
 
 # ╔═╡ e56eb14a-f50c-4006-b770-2c6e7827460e
 md"""
-## 1.1 Package Installations
+## 3.1 Package Installations
 ### PowerModelsDistribution
 `PowerModelsDistribution.jl` (PMD) is a `Julia/JuMP`-based package for modelling unbalanced (i.e., multiconductor) power networks.
 """
@@ -97,7 +97,7 @@ Or, within the notebook:
 
 # ╔═╡ 0d306a99-4a46-4be0-b023-16158f957b27
 md"""
-## 2. Load Network Data
+## 3.2 Load Network Data
 """
 
 # ╔═╡ 8a7f809c-9daf-437d-8ed5-feceb2a9e0dc
@@ -229,7 +229,7 @@ Under "load", there is a "time\_series" dictionary that contains ENGINEERING mod
 
 # ╔═╡ 60296604-c699-4da9-a832-c2e6084c11e3
 md"""
-## 1.3 OPF specifications
+## 3.3 OPF specifications
 """
 
 # ╔═╡ 85dd0411-14f0-4307-9743-85a1d11104a9
@@ -417,7 +417,7 @@ end
 
 # ╔═╡ 10a94dc6-0c67-436c-8c06-9e9091fea166
 md"""
-## 1.4 OPF Problem Solving
+## 3.4 OPF Problem Solving
 """
 
 # ╔═╡ 5376c602-d090-4395-b68a-eface06d9684
@@ -2475,7 +2475,7 @@ version = "1.9.2+0"
 # ╠═df52ae49-b425-4da0-badd-d3a740497423
 # ╟─3aa20db0-8525-4e78-9aa7-1786fca40f96
 # ╟─538c00c8-369e-4fd9-9c9b-5a9ebc5514b7
-# ╟─60296604-c699-4da9-a832-c2e6084c11e3
+# ╠═60296604-c699-4da9-a832-c2e6084c11e3
 # ╟─85dd0411-14f0-4307-9743-85a1d11104a9
 # ╠═5594b993-a765-4d15-b902-d65de44dc0db
 # ╟─aac526f2-586f-471a-bf9a-542917d8b20e
