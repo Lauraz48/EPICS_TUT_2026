@@ -80,24 +80,13 @@ md"""
 Other packages to be used in this notebook:
 """
 
-# ╔═╡ 23fe1799-9923-41f2-b63d-bae9a55bed18
-# Use `using` instead of `import`, keep it consistent
-
-# namespacing
-# **using**: load a library into the session, plot() directly [recommend; use one in notebook, do using for this tutorial]
-# import: Plots.plot()
-
-# if namespace conflict happens, have to distinguish e.g., Plots.plot()
-# for large projects, proper coding
-
 # ╔═╡ 80fba6ba-7599-445f-bb66-10a711a7669b
 plotly()
 
 # ╔═╡ 9ce1b73f-0423-4380-9208-1d5a86f5f098
 md"""
 Note:
-Use `using` to load a library into the session. This allows calling functions directly (e.g., plot()).
-
+Use `using` to load a library into the session. This allows calling functions directly (e.g., plot()).  
 Using `import` keeps functions namespaced (e.g., Plots.plot()), which is useful when avoiding name conflicts or for proper reference in large projects.
 
 """
@@ -145,10 +134,19 @@ You can have a look at the dss files in VSCode. You can install the OpenDSS synt
 
 # ╔═╡ fe7ef10d-473b-4b1d-8fe3-612aac398b9d
 md"""
-For students' better understand of the file components -- 
-**Visualisation of the network? (e.g., IEEE13)**
-(plot the graph, avoiding overlaps of the buses/branches, e.g., graph.jl
+We visualise the network as shown below. The logical topology illustrates the network connectivity, while the scaled topology also accounts for relative line lengths, providing a more realistic representation of the network we use.
 """
+
+# ╔═╡ 189c9380-71c2-47e7-a519-ce7dda3b3a63
+begin
+	fg1 = PlutoUI.LocalResource("../../data/resources/logical_topology.png", "width"=>"300px")
+	fg2 = PlutoUI.LocalResource("../../data/resources/scaled_topology.png", "width"=>"300px")
+	md"""
+	| Logical Topology | Scaled Topology |
+	|:---:|:---:|
+	| $(fg1) | $(fg2) |
+	"""
+end
 
 # ╔═╡ a2186e44-c58c-4645-9014-a91702d0f6fb
 md"""
@@ -180,7 +178,7 @@ ODSS.dss("""
 
 # ╔═╡ caf88250-c0b5-46c6-b22a-27dab8f65919
 md"""
-Use [`summary`](https://opendss.epri.com/Executive2.html) to return a power flow summary of the most recent solution in the global result string.
+We use [`summary`](https://opendss.epri.com/Executive2.html) to return a power flow summary of the most recent solution in the global result string.
 """
 
 # ╔═╡ ace5a001-5f16-4f0e-bfab-59df1a56d16b
@@ -260,7 +258,7 @@ We now add the bus distance to the elements.
 # ╔═╡ dafb08e4-8a9f-4912-b153-bd999c7844c8
 begin
 	voltages_df_1 = innerjoin(voltages_df, busdistancesdf, on=:Bus)
-	voltages_df_1 = voltages_df_1[2:end, :]  # exclude the first bus (xfmr primary)
+	voltages_df_1 = voltages_df_1[2:end, :]  
 	sort!(voltages_df_1,[:busdistances])
 end
 
@@ -356,7 +354,6 @@ function plot_voltage_distance_busconnection()
 		line_nr = ODSS.Lines.Next()
 	end
 
-	# Load buses
 	local load_nr = ODSS.Loads.First()
 	local voltage= [[],[],[],[]]
 	local dist = []
@@ -395,7 +392,7 @@ md"""
 # ╔═╡ dbec4c8b-4819-4943-aab7-10a858560003
 md"""
 Besides OpenDSSDirect, power flow can also be solved using `PowerModelsDistribution`.
-This section shows two ways and compares the result agains that from the previous section.
+This section shows two ways and compares the result against that from the previous section.
 """
 
 # ╔═╡ 0dba5627-323a-4fd3-9967-5408d860dd86
@@ -415,12 +412,19 @@ We construct the `ENGINEERING DATA MODEL` first.
 """
 
 # ╔═╡ 98336b14-893a-4a57-91ab-94f338dbcf61
-data_eng = parse_file(case_file, transformations=[transform_loops!])  # for EN cases
+data_eng = parse_file(case_file, transformations=[transform_loops!])
 
 # ╔═╡ b7cde3b8-db53-472e-bc52-0457b12236c7
 md"""
 Then transform it to MATHEMATICAL model using `transform_data_model`.
 """
+
+# ╔═╡ 2794e6c1-7521-49b4-9fa5-4efcf15bedd1
+begin
+	data_eng["settings"]["sbase_default"] = 1
+	data_eng["voltage_source"]["source"]["rs"] *=1e-8
+	data_eng["voltage_source"]["source"]["xs"] *=1e-8
+end
 
 # ╔═╡ 864cec2d-7c3d-4fc0-a764-20608953a2f7
 data_math = transform_data_model(data_eng, kron_reduce=false, phase_project=false)
@@ -448,9 +452,6 @@ Then we transform the solution to engineering format using [`transform_solution`
 
 # ╔═╡ 6986fd27-7da6-4cce-9604-42fa5f717de6
 res_pmd_eng = transform_solution(res_pmd_math["solution"], data_math, make_si=true)
-
-# ╔═╡ 22cb8b8a-f511-4996-939b-4b88f8d1d38c
-res_pmd_eng["bus"]
 
 # ╔═╡ b075a56b-a22c-4465-b6d0-422342a91acf
 md"""
@@ -492,8 +493,7 @@ We define a function to compare OpenDSS bus voltages (vm, va) against PMD bus vo
 supporting PMD results in the polar and rectangular (Cartesian) forms:
   - polar: vm (voltage magnitude), va (voltage angle)
   - rectangular: vr (voltage real component), vi (voltage imaginary component)
-We returns the maximum complex-voltage error in pu across all matched buses/terminals.
-
+We return the maximum complex-voltage error across all matched buses/terminals.
 """
 
 # ╔═╡ 4fed0344-f8b2-4991-ad34-f20da38d3746
@@ -522,8 +522,8 @@ function compare_res_dss_pmd(res_dss::Dict{String,<:Any}, res_pmd_eng::Dict{Stri
 			continue
 		end
 		
-		v_dss_pu = v_dss/vbase[id]
-		v_pmd_pu = v_pmd/vbase[id]
+		v_dss_pu = v_dss   # /vbase[id]
+		v_pmd_pu = v_pmd   # /vbase[id]
 
 		labels = string.(ts)
 
@@ -571,11 +571,6 @@ We set the formulation to be `IVRENPowerModel`, which is a non-convex nonlinear 
 # ╔═╡ 51ca3789-f6ee-4ba3-8895-d4c0ea47feb5
 formulation = IVRENPowerModel
 
-# ╔═╡ c2da2c1c-b0ab-46f1-a386-303443a11a5e
-md"""
-Deep copy the engineering model.
-"""
-
 # ╔═╡ 3d76d57a-8e56-4453-a80e-d2e28da599b4
 data_eng_2 = deepcopy(data_eng)
 
@@ -611,11 +606,6 @@ We instantiate the model of choice and set up the solver.
 # ╔═╡ d9b96204-387a-44ec-8a2a-52128e38f9de
 pm = instantiate_mc_model(data_math_2, formulation, build_mc_opf)
 
-# ╔═╡ cca35b03-4f76-4e28-83d3-ed043522bfdb
-md"""
-Set up the solver.
-"""
-
 # ╔═╡ cff56dc3-f2ce-4da5-8e28-b9dc0e557c97
 ipopt_solver = optimizer_with_attributes(Ipopt.Optimizer)
 
@@ -629,7 +619,7 @@ result = optimize_model!(pm, optimizer=ipopt_solver)
 
 # ╔═╡ 24d9c062-c0bd-4916-8c18-9f65bba676c0
 md"""
-We transform the solution back to the `ENGINEERING` data model.
+Then we transform the solution back to the `ENGINEERING` data model.
 """
 
 # ╔═╡ 61037f62-00e5-4747-ab99-48e8f4d83382
@@ -755,9 +745,6 @@ df_global = DataFrame(
 # ╔═╡ 15f37365-0aee-41ba-aa27-09b8eebe0999
 
 
-# ╔═╡ f8fda4db-8a8a-46b6-a44f-e92ae4db3e31
-# res_pf_ipopt = solve_mc_model(data_eng_2, IVRENPowerModel, Ipopt.Optimizer, build_mc_pf)
-
 # ╔═╡ f6cff32f-92e4-4966-a9e1-86f81d97ecbc
 md"""
 ---
@@ -771,7 +758,7 @@ Here we illustrate how the bus voltages behave with respect to changes in load.
 
 # ╔═╡ 7b855446-0f29-4c19-a248-8fecdd0c3470
 md"""
-We extract the load names directly from the network DSS file instead of manually entering them.
+We extract the load names from OpenDSS.
 """
 
 # ╔═╡ 2686752c-fdce-4d2e-82b4-24ef04d8ce50
@@ -837,6 +824,9 @@ begin
 	end
 	all_loads_kw()
 end
+
+# ╔═╡ 5325c87e-fc72-4fa8-8d83-59e58ab1b4fb
+# check neu, setup of the model may need finetuning
 
 # ╔═╡ 218c27a8-ea42-42c7-be6b-f6f516b0dfbd
 begin
@@ -2390,7 +2380,6 @@ version = "1.13.0+0"
 # ╠═b1c1c6ea-7eff-4037-b9d7-7398960b1a5a
 # ╠═1f8edf46-f9d0-4239-9f1f-09992563b8b1
 # ╠═22902010-217a-4c90-a55f-31b60f61d801
-# ╟─23fe1799-9923-41f2-b63d-bae9a55bed18
 # ╠═80fba6ba-7599-445f-bb66-10a711a7669b
 # ╟─9ce1b73f-0423-4380-9208-1d5a86f5f098
 # ╟─c020e96b-8ebe-4762-a26b-bfef7c5ee3eb
@@ -2401,6 +2390,7 @@ version = "1.13.0+0"
 # ╟─305a6048-8ccb-49db-b4c9-ad5cc3ddac69
 # ╟─867fdb7f-e014-488a-bde8-e56a4b14d3af
 # ╟─fe7ef10d-473b-4b1d-8fe3-612aac398b9d
+# ╟─189c9380-71c2-47e7-a519-ce7dda3b3a63
 # ╟─a2186e44-c58c-4645-9014-a91702d0f6fb
 # ╟─dc2cb667-0a21-4ab4-a40c-11891c7ab76a
 # ╠═94d10046-c33a-4907-bcd4-b3da3c46cbc3
@@ -2413,31 +2403,32 @@ version = "1.13.0+0"
 # ╠═adc2490f-bd41-4d62-94e3-5326a3b0457d
 # ╟─01dff246-0b36-487e-a6b1-d1aae88d4b4a
 # ╠═49a385dd-84ed-46b3-8331-afc4f1506f24
-# ╠═036d1ad7-775c-464b-b2f4-3bf60d615c04
-# ╠═8b1d424c-6aac-480f-a1dc-7f7df3becb22
+# ╟─036d1ad7-775c-464b-b2f4-3bf60d615c04
+# ╟─8b1d424c-6aac-480f-a1dc-7f7df3becb22
 # ╠═7816afd1-d591-4f1d-aedc-c5b13cfd6b99
-# ╠═adb4306c-154c-428e-906a-223a66e43817
+# ╟─adb4306c-154c-428e-906a-223a66e43817
 # ╠═270e64be-4d3a-4205-9a2c-98d93fb63e59
 # ╟─67b4308e-ce3d-4c12-b305-c5980165f804
 # ╠═dafb08e4-8a9f-4912-b153-bd999c7844c8
 # ╟─65d98000-1831-4885-a4b1-e4ba85df2021
-# ╠═5b98d946-b327-4759-a73d-285e2e61dc08
+# ╟─5b98d946-b327-4759-a73d-285e2e61dc08
 # ╟─16573d92-a5b9-4b2a-a1c3-7d4d6df108e8
-# ╠═a7875c60-06a2-4f3e-aad2-0ac10c1b2f8e
+# ╟─a7875c60-06a2-4f3e-aad2-0ac10c1b2f8e
 # ╟─c6269e6e-ee12-4881-9425-7419e6bc2333
-# ╠═58671576-8728-4e48-871c-148b732102b1
+# ╟─58671576-8728-4e48-871c-148b732102b1
 # ╟─b3a7b2e1-ca84-4589-bca6-f1f796af8530
-# ╠═16881d47-3e90-4298-95f5-22690ac1195e
+# ╟─16881d47-3e90-4298-95f5-22690ac1195e
 # ╟─879f1fb1-a816-4c20-b58f-9541470745f2
-# ╠═5cfe9a47-a3a9-4fe2-b130-a5e599791b0a
-# ╠═3a36685e-d91f-4bba-b208-c1ae1df69a73
-# ╠═4890afa2-8ccf-456e-9d77-610047f1ee43
+# ╟─5cfe9a47-a3a9-4fe2-b130-a5e599791b0a
+# ╟─3a36685e-d91f-4bba-b208-c1ae1df69a73
+# ╟─4890afa2-8ccf-456e-9d77-610047f1ee43
 # ╟─dbec4c8b-4819-4943-aab7-10a858560003
-# ╠═0dba5627-323a-4fd3-9967-5408d860dd86
+# ╟─0dba5627-323a-4fd3-9967-5408d860dd86
 # ╟─a76c642e-6159-4698-9f6e-256691e2ac48
 # ╟─980c8cfd-5be1-49ed-97a2-3add19854640
 # ╠═98336b14-893a-4a57-91ab-94f338dbcf61
 # ╟─b7cde3b8-db53-472e-bc52-0457b12236c7
+# ╠═2794e6c1-7521-49b4-9fa5-4efcf15bedd1
 # ╠═864cec2d-7c3d-4fc0-a764-20608953a2f7
 # ╟─fab5b940-a062-4907-b4eb-7cce30581d95
 # ╠═b84ec704-59ab-4443-b8cf-97f83eb59f28
@@ -2445,7 +2436,6 @@ version = "1.13.0+0"
 # ╠═a7a36d22-e6d9-4a96-ae94-bfc50e8d42ef
 # ╟─7aa0aa07-25ca-470e-87b5-957ec95b45f9
 # ╠═6986fd27-7da6-4cce-9604-42fa5f717de6
-# ╠═22cb8b8a-f511-4996-939b-4b88f8d1d38c
 # ╟─b075a56b-a22c-4465-b6d0-422342a91acf
 # ╟─90c84c45-8c06-4e54-a674-dd596d66cf44
 # ╠═c873584e-9a93-436a-8868-59fb71db560d
@@ -2456,8 +2446,7 @@ version = "1.13.0+0"
 # ╟─169b34f6-c357-4fa8-92a5-058adc514ed9
 # ╟─295e4a52-4335-48cf-b722-9eca908648c7
 # ╟─6b0a0764-6fce-481d-83b1-a4e94a5f16eb
-# ╠═51ca3789-f6ee-4ba3-8895-d4c0ea47feb5
-# ╟─c2da2c1c-b0ab-46f1-a386-303443a11a5e
+# ╟─51ca3789-f6ee-4ba3-8895-d4c0ea47feb5
 # ╠═3d76d57a-8e56-4453-a80e-d2e28da599b4
 # ╟─75e68068-8796-4745-be38-a901a91a47a7
 # ╠═18fa9315-7fa7-4b43-a450-c7806a4c9f97
@@ -2467,7 +2456,6 @@ version = "1.13.0+0"
 # ╠═17f8a3c3-0ac9-4ebd-84e5-408574f4569d
 # ╟─11bea3f9-9066-45db-afba-f7b501c91ab0
 # ╠═d9b96204-387a-44ec-8a2a-52128e38f9de
-# ╟─cca35b03-4f76-4e28-83d3-ed043522bfdb
 # ╠═cff56dc3-f2ce-4da5-8e28-b9dc0e557c97
 # ╟─fa3c626e-4c54-42f4-b69a-87233462cb98
 # ╠═455b4b49-39f9-4de8-b3a4-eb4b56967f62
@@ -2477,24 +2465,24 @@ version = "1.13.0+0"
 # ╠═90e83716-2170-46a7-bd8e-f1b0fd64fe2f
 # ╟─f8d8cea5-820a-47d1-8362-fc331acc937d
 # ╟─652beae9-71b8-4103-86dc-87c0b133f3de
-# ╠═2429d7b9-057d-4202-b5ca-09b699036573
-# ╠═dd3e87a7-ba6d-44c9-9733-46f922daf56b
-# ╠═28f8105b-06e4-4e3e-9286-b85b7d3c277e
-# ╠═6c8788fa-7a09-4c95-bd04-8399769c2cef
+# ╟─2429d7b9-057d-4202-b5ca-09b699036573
+# ╟─dd3e87a7-ba6d-44c9-9733-46f922daf56b
+# ╟─28f8105b-06e4-4e3e-9286-b85b7d3c277e
+# ╟─6c8788fa-7a09-4c95-bd04-8399769c2cef
 # ╠═15f37365-0aee-41ba-aa27-09b8eebe0999
-# ╠═f8fda4db-8a8a-46b6-a44f-e92ae4db3e31
 # ╟─f6cff32f-92e4-4966-a9e1-86f81d97ecbc
 # ╟─0bbe9eaf-48b2-480a-bcf2-2df07d5d87c3
 # ╟─7b855446-0f29-4c19-a248-8fecdd0c3470
-# ╠═2686752c-fdce-4d2e-82b4-24ef04d8ce50
-# ╠═f1b5f796-ff78-44f3-864b-b87c076ba3f9
+# ╟─2686752c-fdce-4d2e-82b4-24ef04d8ce50
+# ╟─f1b5f796-ff78-44f3-864b-b87c076ba3f9
 # ╟─9138db5b-6631-4f58-b8ed-ebef3c6da893
-# ╠═1b60b9b2-7bc9-4b3f-995c-ce11f4945dfc
-# ╠═1cef4bfa-bcb0-4a9e-b677-255db7f601f3
-# ╠═b1f1dfdd-c967-475e-9ffc-f26aed25c3d7
-# ╠═0c302cd6-01a1-47e0-a7fb-365c3158799d
+# ╟─1b60b9b2-7bc9-4b3f-995c-ce11f4945dfc
+# ╟─1cef4bfa-bcb0-4a9e-b677-255db7f601f3
+# ╟─b1f1dfdd-c967-475e-9ffc-f26aed25c3d7
+# ╟─0c302cd6-01a1-47e0-a7fb-365c3158799d
 # ╟─9c11235b-ce62-4b6b-b827-29fe3556a20e
 # ╟─11473624-c664-46e7-b016-f05a22da8eeb
+# ╠═5325c87e-fc72-4fa8-8d83-59e58ab1b4fb
 # ╟─218c27a8-ea42-42c7-be6b-f6f516b0dfbd
 # ╟─dcbf3fad-4744-4ad3-8975-1a7cd651a443
 # ╟─00000000-0000-0000-0000-000000000001
