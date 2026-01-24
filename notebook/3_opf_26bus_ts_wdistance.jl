@@ -329,7 +329,6 @@ Applying all these transformations can result in redundant constraints. This iss
 
 # ╔═╡ 710405ab-821d-49bb-9d89-804ba2dab975
 begin
-	data_eng4w_ts["conductor_ids"] = 1:4
 	data_eng4w_ts["settings"]["sbase_default"] = 1
 	data_eng4w_ts["voltage_source"]["source"]["rs"] *=0
 	data_eng4w_ts["voltage_source"]["source"]["xs"] *=0
@@ -469,12 +468,9 @@ res_mn = solve_mn_mc_opf(data_math4w_mn, IVRENPowerModel, optimizer_with_attribu
 # ╔═╡ 02a0ab25-0f3e-47a8-803d-fe7720231360
 sol_math4w_mn = res_mn["solution"]
 
-# ╔═╡ 6a46c79b-feaf-4619-afcf-03c584c77c36
-sol_math4w_mn["nw"]["1"]["bus"]
-
 # ╔═╡ 761d285e-19a4-43a3-8b32-2b324b9f22a2
 md"""
-We transform the solutions back to the ENGINEERING data model using `transform_solution` for easier inspection, as the results are presented using familiar component names and SI units.
+We transform the solutions back to the ENGINEERING data model using `transform_solution` for easier inspection, as the results are presented using familiar component names and SI/engineering units.
 """
 
 # ╔═╡ 5b5d078d-4711-421e-80bb-7b9d98ef198b
@@ -596,6 +592,11 @@ end
 # ╔═╡ e0709d04-5847-4479-805a-98938a12c641
 nws_ids = sort(parse.(Int, collect(keys(sol_eng4w_mn["nw"]))))
 
+# ╔═╡ 5a2fb6a0-e4b7-48dc-84ae-7f8c4a8ee97d
+md"""
+**Select the network/time to plot**
+"""
+
 # ╔═╡ d1216ac9-ff9d-4381-88e3-e72663f7b3aa
 @bind nwid Select(nws_ids; default=21)
 
@@ -622,6 +623,11 @@ function vmag_alltimes_df(sol_eng4w_mn, busdistancesdf; nws, exclude_bus="b2157"
     end
     return vcat(dfs...)
 end
+
+# ╔═╡ 1461c124-f8d0-40bb-86b6-3eab839d516b
+md"""
+Finally, we visualise voltage distribution across phases.
+"""
 
 # ╔═╡ 8624cefa-7ee3-489c-ba2d-002346faa1a1
 vd_all = vmag_alltimes_df(sol_eng4w_mn, busdistancesdf; nws=nws, exclude_bus="b2157");
@@ -2462,7 +2468,7 @@ version = "1.9.2+0"
 # ╟─74c2d538-fc48-403b-87e0-cf3b18e09295
 # ╠═70ff7407-4ff6-4e3e-9539-589023e874fd
 # ╠═edf58943-6276-4cd5-bfdd-8971ffa50cea
-# ╠═e46ebce4-ebee-4192-9f59-3975331bed44
+# ╟─e46ebce4-ebee-4192-9f59-3975331bed44
 # ╠═db3b810e-7bbc-47cf-983a-4d1e4d19f239
 # ╟─557b7ea0-7602-40cd-87d1-cac3589d0896
 # ╟─4b0f2edd-416e-4c18-b37f-f55ae22f0985
@@ -2475,7 +2481,7 @@ version = "1.9.2+0"
 # ╠═df52ae49-b425-4da0-badd-d3a740497423
 # ╟─3aa20db0-8525-4e78-9aa7-1786fca40f96
 # ╟─538c00c8-369e-4fd9-9c9b-5a9ebc5514b7
-# ╠═60296604-c699-4da9-a832-c2e6084c11e3
+# ╟─60296604-c699-4da9-a832-c2e6084c11e3
 # ╟─85dd0411-14f0-4307-9743-85a1d11104a9
 # ╠═5594b993-a765-4d15-b902-d65de44dc0db
 # ╟─aac526f2-586f-471a-bf9a-542917d8b20e
@@ -2513,30 +2519,31 @@ version = "1.9.2+0"
 # ╟─764903e5-12dd-4476-8cc1-d15ef7305cd3
 # ╠═47b94ffb-1826-45fd-9fff-35fc5e6d2ac5
 # ╠═02a0ab25-0f3e-47a8-803d-fe7720231360
-# ╠═6a46c79b-feaf-4619-afcf-03c584c77c36
 # ╟─761d285e-19a4-43a3-8b32-2b324b9f22a2
 # ╠═5b5d078d-4711-421e-80bb-7b9d98ef198b
 # ╟─58d0a98d-aff4-4fc2-a599-4b7b30515ec4
 # ╟─988b18ab-2dc9-42c8-8043-14c077a71cbd
 # ╟─0632488c-b8b1-442b-a115-cc69d9962e62
-# ╠═c436b591-ea92-46f6-ac89-9ee37839f7e4
+# ╟─c436b591-ea92-46f6-ac89-9ee37839f7e4
 # ╟─d2b5a274-a1bc-49a5-beeb-3140b95356a0
-# ╠═86d897d7-dbfc-4964-af1e-d3da598e146a
-# ╠═1e339b7a-86a0-41ca-bb6d-8f95380e4959
-# ╠═f922d3ae-b25a-42e1-85a6-a5431ca18afb
+# ╟─86d897d7-dbfc-4964-af1e-d3da598e146a
+# ╟─1e339b7a-86a0-41ca-bb6d-8f95380e4959
+# ╟─f922d3ae-b25a-42e1-85a6-a5431ca18afb
 # ╟─56a3deaa-5a33-4335-9889-514850b150e6
 # ╟─9be02aef-7b80-4712-890d-b8dc8f65226e
 # ╟─07ea0019-fbe2-4360-8c2a-4e739aa97158
 # ╠═eb6ca0e5-f495-4b72-9648-aff55a571d22
-# ╠═a011fdef-4a9d-4784-8de3-1e14367f9768
-# ╠═74f18f35-9831-4899-9b7c-d3357c40c449
-# ╠═6922b7a1-c6d6-4aa0-b59f-f95136975ff3
+# ╟─a011fdef-4a9d-4784-8de3-1e14367f9768
+# ╟─74f18f35-9831-4899-9b7c-d3357c40c449
+# ╟─6922b7a1-c6d6-4aa0-b59f-f95136975ff3
 # ╟─e0709d04-5847-4479-805a-98938a12c641
+# ╟─5a2fb6a0-e4b7-48dc-84ae-7f8c4a8ee97d
 # ╟─d1216ac9-ff9d-4381-88e3-e72663f7b3aa
 # ╟─d6dc95a2-bc81-421c-9dfa-8ce496c39eb7
-# ╠═52bd91a6-d6c6-4568-86bf-3eb756ef8c95
+# ╟─52bd91a6-d6c6-4568-86bf-3eb756ef8c95
 # ╟─97a9c66f-76f4-4ad9-aa82-ead0cef4ff0c
-# ╠═8624cefa-7ee3-489c-ba2d-002346faa1a1
-# ╠═38070dab-02da-4bd1-9bd2-1174ad6c10fe
+# ╟─1461c124-f8d0-40bb-86b6-3eab839d516b
+# ╟─8624cefa-7ee3-489c-ba2d-002346faa1a1
+# ╟─38070dab-02da-4bd1-9bd2-1174ad6c10fe
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
