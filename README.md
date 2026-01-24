@@ -17,9 +17,9 @@ The repository is organised into the following components and examples:
 
 ### 1. Three-Phase Four-Wire Unbalanced Power Flow
 
-Script: `play.jl`
+Script: `Powerflow.jl`
 
-This section covers unbalanced power flow analysis and includes:
+This section covers unbalanced power flow analysis and includes guidance on:
 - Power flow modelling using `OpenDSSDirect.jl`
 - Power flow modelling using `PowerModelsDistribution.jl (PMD)`, including
   - Native PMD power flow formulation
@@ -29,9 +29,9 @@ This section covers unbalanced power flow analysis and includes:
 
 ### 2. Three-Phase Four-Wire Unbalanced Optimal Power Flow
 
-This section focuses on optimal power flow formulations and includes:
-- Snapshot OPF: `3_opf_26bus_wdistance.jl`  
-- Multinetwork / Time-Series OPF: `3_opf_26bus_ts_wdistance.jl`  
+This section focuses on optimal power flow formulations and includes guidance on:
+- Snapshot OPF: `Optimalpowerflow_sn.jl`  
+- Multinetwork / Time-Series OPF: `Optimalpowerflow_ts.jl`  
 
 ### 3. Additional Examples for Beginners
 
