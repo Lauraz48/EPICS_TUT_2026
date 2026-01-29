@@ -4,18 +4,6 @@
 using Markdown
 using InteractiveUtils
 
-# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
-macro bind(def, element)
-    #! format: off
-    return quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
-        local el = $(esc(element))
-        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
-        el
-    end
-    #! format: on
-end
-
 # ╔═╡ 43347c40-6c9d-4075-b5c1-fea3c8d31f32
 begin
 	using OpenDSSDirect
@@ -509,10 +497,8 @@ function compare_res_dss_pmd(res_dss::Dict{String,<:Any}, res_pmd_eng::Dict{Stri
 		terminals = data_eng["bus"][id]["terminals"]
 		ts = filter(x->haskey(dss_bus["vm"], string(x)), terminals)
 
-		# DSS: vm/va
 		v_dss = [dss_bus["vm"]["$t"]*exp(im*deg2rad(dss_bus["va"]["$t"])) for t in ts]
 
-		# PMD: (vm/va) or (vr/vi)
 		if haskey(pmd_bus, "vm") && haskey(pmd_bus, "va")
 			v_pmd = [pmd_bus["vm"][idx]*exp(im*deg2rad(pmd_bus["va"][idx]))*data_eng["settings"]["voltage_scale_factor"] for (idx, _) in enumerate(ts)]
 		elseif haskey(pmd_bus, "vr") && haskey(pmd_bus, "vi")
@@ -542,7 +528,8 @@ function compare_res_dss_pmd(res_dss::Dict{String,<:Any}, res_pmd_eng::Dict{Stri
 		end
 	end
 
-	return max_v_err_pu
+	max_v_err = max_v_err_pu
+	return max_v_err
 end
 
 # ╔═╡ f62915be-8564-4107-a8a3-28e3547c4ff1
@@ -551,7 +538,7 @@ Get the maximum error.
 """
 
 # ╔═╡ 9a813e6f-f58f-4835-acc5-a3f68c62256d
-v_max_err_pu = compare_res_dss_pmd(res_dss, res_pmd_eng, data_eng, vbase, verbose=true)
+v_max_err = compare_res_dss_pmd(res_dss, res_pmd_eng, data_eng, vbase, verbose=true)
 
 # ╔═╡ 169b34f6-c357-4fa8-92a5-058adc514ed9
 md"""
@@ -631,7 +618,7 @@ Calculate the maximum voltage error w.r.t DSS model.
 """
 
 # ╔═╡ 90e83716-2170-46a7-bd8e-f1b0fd64fe2f
-v_max_err_pu_2 = compare_res_dss_pmd(res_dss, res_pmd_ipopt, data_eng_2, vbase, verbose=true)
+v_max_err_2 = compare_res_dss_pmd(res_dss, res_pmd_ipopt, data_eng_2, vbase, verbose=true)
 
 # ╔═╡ f8d8cea5-820a-47d1-8362-fc331acc937d
 md"""
@@ -736,9 +723,9 @@ df_global = DataFrame(
         "PMD native power flow",
         "PMD OPF-based solve (Ipopt)"
     ],
-    Max_Voltage_Error_pu = [
-        v_max_err_pu,
-        v_max_err_pu_2
+    Max_Voltage_Error = [
+        v_max_err,
+        v_max_err_2
     ]
 )
 
@@ -751,100 +738,136 @@ md"""
 """
 
 # ╔═╡ 0bbe9eaf-48b2-480a-bcf2-2df07d5d87c3
-md"""
-### PLAYGROUND
-Here we illustrate how the bus voltages behave with respect to changes in load.
-"""
+# ╠═╡ disabled = true
+#=╠═╡
+# md"""
+# ### PLAYGROUND
+# Here we illustrate how the bus voltages behave with respect to changes in load.
+# """
+  ╠═╡ =#
 
 # ╔═╡ 7b855446-0f29-4c19-a248-8fecdd0c3470
-md"""
-We extract the load names from OpenDSS.
-"""
+# ╠═╡ disabled = true
+#=╠═╡
+# md"""
+# We extract the load names from OpenDSS.
+# """
+  ╠═╡ =#
 
 # ╔═╡ 2686752c-fdce-4d2e-82b4-24ef04d8ce50
-function get_all_load_names()
-	names = String[]
-	i = ODSS.Loads.First()
-	while i > 0
-		push!(names, ODSS.Loads.Name())
-		i = ODSS.Loads.Next()
-	end
-	return names
-end
+# ╠═╡ disabled = true
+#=╠═╡
+# function get_all_load_names()
+# 	names = String[]
+# 	i = ODSS.Loads.First()
+# 	while i > 0
+# 		push!(names, ODSS.Loads.Name())
+# 		i = ODSS.Loads.Next()
+# 	end
+# 	return names
+# end
+  ╠═╡ =#
 
 # ╔═╡ f1b5f796-ff78-44f3-864b-b87c076ba3f9
-load_names = get_all_load_names()
+# ╠═╡ disabled = true
+#=╠═╡
+# load_names = get_all_load_names()
+  ╠═╡ =#
 
 # ╔═╡ 9138db5b-6631-4f58-b8ed-ebef3c6da893
-md"""
-We develop functions for activating loads and setting power multipliers.
-"""
+# ╠═╡ disabled = true
+#=╠═╡
+# md"""
+# We develop functions for activating loads and setting power multipliers.
+# """
+  ╠═╡ =#
 
 # ╔═╡ 1b60b9b2-7bc9-4b3f-995c-ce11f4945dfc
-function activate_load!(lname::String)
-    ODSS.Loads.Name(lname)
-    active = ODSS.Loads.Name()
-    if active != lname
-        error("Load not found or not activated: $lname (active=$active)")
-    end
-    return nothing
-end
+# ╠═╡ disabled = true
+#=╠═╡
+# function activate_load!(lname::String)
+#     ODSS.Loads.Name(lname)
+#     active = ODSS.Loads.Name()
+#     if active != lname
+#         error("Load not found or not activated: $lname (active=$active)")
+#     end
+#     return nothing
+# end
+  ╠═╡ =#
 
 # ╔═╡ 1cef4bfa-bcb0-4a9e-b677-255db7f601f3
-function set_load_kwmult!(lname::String, kwmult::Real)
-    activate_load!(lname)
-    ODSS.Loads.kW(Float64(kwmult))
-    return nothing
-end
+# ╠═╡ disabled = true
+#=╠═╡
+# function set_load_kwmult!(lname::Striang, kwmult::Real)
+#     activate_load!(lname)
+#     ODSS.Loads.kW(Float64(kwmult))
+#     return nothing
+# end
+  ╠═╡ =#
 
 # ╔═╡ b1f1dfdd-c967-475e-9ffc-f26aed25c3d7
-@bind selected_load Select(load_names)
+# ╠═╡ disabled = true
+#=╠═╡
+# @bind selected_load Select(load_names)
+  ╠═╡ =#
 
 # ╔═╡ 0c302cd6-01a1-47e0-a7fb-365c3158799d
-md"""
-#### 0 $(@bind kwmult Slider(0:30, default=25)) 30
-"""
+# ╠═╡ disabled = true
+#=╠═╡
+# md"""
+# #### 0 $(@bind kwmult Slider(0:30, default=25)) 30
+# """
+  ╠═╡ =#
 
 # ╔═╡ 9c11235b-ce62-4b6b-b827-29fe3556a20e
-md"""
-Select the load kW : $(kwmult)
-"""
+# ╠═╡ disabled = true
+#=╠═╡
+# md"""
+# Select the load kW : $(kwmult)
+# """
+  ╠═╡ =#
 
 # ╔═╡ 11473624-c664-46e7-b016-f05a22da8eeb
-begin
-	function all_loads_kw()
-	    data = Dict{String,Float64}()
-	    i = ODSS.Loads.First()
-	    while i > 0
-	        name = ODSS.Loads.Name()
-	        data[name] = ODSS.Loads.kW()
-	        i = ODSS.Loads.Next()
-	    end
-	    data
-	end
-	all_loads_kw()
-end
-
-# ╔═╡ 5325c87e-fc72-4fa8-8d83-59e58ab1b4fb
-# check neu, setup of the model may need finetuning
+# ╠═╡ disabled = true
+#=╠═╡
+# begin
+# 	function all_loads_kw()
+# 	    data = Dict{String,Float64}()
+# 	    i = ODSS.Loads.First()
+# 	    while i > 0
+# 	        name = ODSS.Loads.Name()
+# 	        data[name] = ODSS.Loads.kW()
+# 	        i = ODSS.Loads.Next()
+# 	    end
+# 	    data
+# 	end
+# 	all_loads_kw()
+# end
+  ╠═╡ =#
 
 # ╔═╡ 218c27a8-ea42-42c7-be6b-f6f516b0dfbd
-begin
-	set_load_kwmult!(selected_load, kwmult)
-	ODSS.dss("solve")
-	ODSS.dss("solve")
-	# ODSS.dss("summary")
-	if !ODSS.Solution.Converged()
-		@warn "Power flow did not converge."
-	end
-	p2 = plot_voltage_distance_busconnection()
+# ╠═╡ disabled = true
+#=╠═╡
+# begin
+# 	set_load_kwmult!(selected_load, kwmult)
+# 	ODSS.dss("solve")
+# 	ODSS.dss("solve")
+# 	# ODSS.dss("summary")
+# 	if !ODSS.Solution.Converged()
+# 		@warn "Power flow did not converge."
+# 	end
+# 	p2 = plot_voltage_distance_busconnection()
 
-end
+# end
+  ╠═╡ =#
 
 # ╔═╡ dcbf3fad-4744-4ad3-8975-1a7cd651a443
-md"""
-We can see that voltage drop in the network is affected by load variation and distance from the source. In addition, neutral voltage rise increases with greater load unbalance.
-"""
+# ╠═╡ disabled = true
+#=╠═╡
+# md"""
+# We can see that voltage drop in the network is affected by load variation and distance from the source. In addition, neutral voltage rise increases with greater load unbalance.
+# """
+  ╠═╡ =#
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2468,7 +2491,7 @@ version = "1.13.0+0"
 # ╟─2429d7b9-057d-4202-b5ca-09b699036573
 # ╟─dd3e87a7-ba6d-44c9-9733-46f922daf56b
 # ╟─28f8105b-06e4-4e3e-9286-b85b7d3c277e
-# ╟─6c8788fa-7a09-4c95-bd04-8399769c2cef
+# ╠═6c8788fa-7a09-4c95-bd04-8399769c2cef
 # ╠═15f37365-0aee-41ba-aa27-09b8eebe0999
 # ╟─f6cff32f-92e4-4966-a9e1-86f81d97ecbc
 # ╟─0bbe9eaf-48b2-480a-bcf2-2df07d5d87c3
@@ -2482,7 +2505,6 @@ version = "1.13.0+0"
 # ╟─0c302cd6-01a1-47e0-a7fb-365c3158799d
 # ╟─9c11235b-ce62-4b6b-b827-29fe3556a20e
 # ╟─11473624-c664-46e7-b016-f05a22da8eeb
-# ╠═5325c87e-fc72-4fa8-8d83-59e58ab1b4fb
 # ╟─218c27a8-ea42-42c7-be6b-f6f516b0dfbd
 # ╟─dcbf3fad-4744-4ad3-8975-1a7cd651a443
 # ╟─00000000-0000-0000-0000-000000000001
