@@ -24,8 +24,7 @@ This section covers unbalanced power flow analysis and includes guidance on:
 - Power flow modelling using `PowerModelsDistribution.jl (PMD)`, including
   - Native PMD power flow formulation
   - Using Ipopt as a nonlinear equation solver
-- (Comparison of results between OpenDSS and PMD)
-- (An interactive “playground” for exploring voltage profiles under varying load conditions)
+- Comparison of results
 
 ### 2. Three-Phase Four-Wire Unbalanced Optimal Power Flow
 
