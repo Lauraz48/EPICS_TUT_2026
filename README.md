@@ -3,6 +3,23 @@
 This repository contains the materials used for the EPICS 2026 tutorial session.  
 It focuses on hands-on coding exercises and demonstrations for the effective use of [`OpenDSSDirect.jl`](https://dss-extensions.org/OpenDSSDirect.jl/stable/) and [`PowerModelsDistribution.jl`](https://lanl-ansi.github.io/PowerModelsDistribution.jl/stable/index.html) to model and solve unbalanced distribution system problems.
 
+## Getting Started
+
+Make sure that you already install [Julia](https://julialang.org/downloads/). Start a Julia,
+
+```sh
+julia
+```
+
+Install and start [Pluto.jl](https://plutojl.org/#install),
+
+```julia
+import Pkg; Pkg.add("Pluto")
+import Pluto; Pluto.run()
+```
+
+Select any notebook from `notebook/` and press `Run notebook code`.
+
 ## Repository Structure
 
 - **Notebook/**  
