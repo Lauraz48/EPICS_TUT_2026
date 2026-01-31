@@ -1,6 +1,6 @@
-new load.Ld335_LOAD_A phases=1 bus1=B2594.1.4 kv=0.249992666559  vminpu=0.1 vmaxpu=2  kW=29 pf=0.9 model=1 daily=ls1
+new load.Ld335_LOAD_A phases=1 bus1=B2594.1.4 kv=0.249992666559  vminpu=0.1 vmaxpu=2  kW=26 pf=0.9 model=1 daily=ls1
 new load.Ld1540_LOAD_B phases=1 bus1=B1683.2.4 kv=0.249992666559  vminpu=0.1 vmaxpu=2  kW=30 pf=0.9 model=1 daily=ls1
-new load.Ld1971_LOAD_C phases=1 bus1=B1816.3.4 kv=0.249992666559  vminpu=0.1 vmaxpu=2  kW=29 pf=0.9 model=1 daily=ls1
+new load.Ld1971_LOAD_C phases=1 bus1=B1816.3.4 kv=0.249992666559  vminpu=0.1 vmaxpu=2  kW=28 pf=0.9 model=1 daily=ls1
 new load.Ld3757_LOAD_A phases=1 bus1=B2813.1.4 kv=0.249992666559  vminpu=0.1 vmaxpu=2 kW=4 pf=0.9 model=1 daily=ls1
 
 new Loadshape.ls1 pmult=(file=load_profile_actual.csv)
